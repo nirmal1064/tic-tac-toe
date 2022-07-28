@@ -1,0 +1,22 @@
+#root {
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.grid {
+  display: grid;
+  gap: 3px;
+  grid-template-columns: repeat(3, 1fr);
+  /* justify-content: center; */
+}
+
+.grid-item {
+  border: none;
+  /* padding: 10px; */
+  background-color: red;
+  width: 5rem;
+  height: 5rem;
+  /* line-height: 5rem; */
+  font-size: 4em;
+  font-weight: bold;
+}

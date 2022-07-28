@@ -1,0 +1,17 @@
+{
+  "name": "tic-tac-toe",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "private": "true",
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "start": "concurrently \"yarn workspace server dev\" \"yarn workspace client dev\""
+  },
+  "devDependencies": {
+    "concurrently": "^7.3.0"
+  }
+}
