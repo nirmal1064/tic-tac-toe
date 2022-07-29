@@ -16,3 +16,25 @@ export interface SocketData {
   name: string;
   age: number;
 }
+
+export type JoinRoomType = {
+  roomId: string;
+  userId: string;
+};
+
+export type JoinRoomSuccessType = {
+  roomId: string;
+  joined: boolean;
+};
+
+export type RoomType = {
+  roomId: string;
+  users: string[];
+};
+
+export type UserType = {
+  userId: string;
+  userName: string;
+  roomId: string;
+  symbol: "X" | "O" | null;
+};

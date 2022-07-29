@@ -21,7 +21,7 @@ type BoardContextType = {
   setBoard: SetBoardType;
 };
 
-export const BoardContext = createContext<BoardContextType>({
+const BoardContext = createContext<BoardContextType>({
   board: defaultValue,
   setBoard: defaultUpdate
 });
