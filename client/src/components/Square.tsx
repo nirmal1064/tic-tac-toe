@@ -1,39 +1,34 @@
-import { FC, useEffect } from "react";
-import { useBoard } from "../context/BoardProvider";
+import { MakeMoveType, MAKE_MOVE } from "@tic-tac-toe/utils";
+import { FC } from "react";
 import { useSocket } from "../context/SocketProvider";
 import { useUser } from "../context/UserProvider";
 
 type SquareTypes = {
   value: "X" | "O" | null;
   idx: number;
+  bgColor: string;
 };
 
-const Square: FC<SquareTypes> = ({ value, idx }: SquareTypes) => {
+const Square: FC<SquareTypes> = ({ value, idx, bgColor }: SquareTypes) => {
   const socket = useSocket();
-  const { board, setBoard } = useBoard();
   const { state } = useUser();
+  const { roomId, symbol, userId } = state;
 
   const handleSquareClick = () => {
-    const newBoard = board.map((boardValue, index) => {
-      if (idx === index && boardValue === null) {
-        return state.symbol;
-      }
-      return boardValue;
-    });
-    setBoard(newBoard);
+    const makeMove: MakeMoveType = {
+      roomId,
+      userId,
+      idx,
+      symbol: symbol === "X" ? "X" : "O"
+    };
+    socket?.emit(MAKE_MOVE, makeMove);
   };
 
-  useEffect(() => {
-    socket?.on("GET_RESPONSE", (msg) => {
-      console.log(msg);
-    });
-    return () => {
-      socket?.off("GET_RESPONSE");
-    };
-  }, [socket]);
-
   return (
-    <button className="grid-item" onClick={() => handleSquareClick()}>
+    <button
+      className="grid-item"
+      style={{ backgroundColor: bgColor }}
+      onClick={() => handleSquareClick()}>
       {value}
     </button>
   );

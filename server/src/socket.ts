@@ -1,13 +1,15 @@
 import {
-  CREATE_ROOM,
-  CREATE_ROOM_SUCCESS,
   ERR_MSG,
+  JOIN,
   JoinRoomSuccessType,
   JoinRoomType,
-  JOIN_ROOM,
   JOIN_ROOM_SUCCESS,
+  MADE_MOVE,
+  MakeMoveType,
+  MAKE_MOVE,
   MAX_USERS_PER_ROOM,
-  RoomType
+  RoomType,
+  START_GAME
 } from "@tic-tac-toe/utils";
 import { createServer } from "http";
 import { Server } from "socket.io";
@@ -22,43 +24,73 @@ const io = new Server(httpServer, {
   }
 });
 
+const startGame = async (room: RoomType, currentIo: Server) => {
+  const { users } = room;
+  users.forEach((user) => {
+    if (user.symbol === "X") {
+      room.currentUser = user.userId;
+    }
+  });
+  currentIo.emit(START_GAME, room);
+};
+
+const handleMakeMove = (data: MakeMoveType) => {
+  const { userId, idx, roomId } = data;
+  const room = rooms.get(roomId);
+  if (!room) return;
+  const { users, board, currentUser } = room;
+  if (currentUser !== userId) return;
+  if (board[idx] !== null) return;
+  board[idx] = data.symbol;
+  users.forEach((user) => {
+    if (user.symbol !== data.symbol) {
+      room.currentUser = user.userId;
+    }
+  });
+  io.to(roomId).emit(MADE_MOVE, room);
+};
+
 io.on("connection", (socket) => {
   console.log(`User connected with id ${socket.id}`);
 
-  socket.on("disconnect", () => {
-    console.log(`User disconnected with id ${socket.id}`);
-  });
-
-  socket.on(CREATE_ROOM, (data: JoinRoomType) => {
-    console.log(`Create room request ${JSON.stringify(data)}`);
+  socket.on(JOIN, async (data: JoinRoomType) => {
+    socket.rooms.forEach((socketRoom) => {
+      socket.leave(socketRoom);
+    });
     const { roomId } = data;
-    const roomInfo: RoomType = {
-      roomId,
-      users: [data.userId]
-    };
-    rooms.set(roomId, roomInfo);
-    socket.join(roomId);
-    const result: JoinRoomSuccessType = { roomId, joined: true };
-    socket.emit(CREATE_ROOM_SUCCESS, result);
-  });
-
-  socket.on(JOIN_ROOM, (data: JoinRoomType) => {
-    console.log(`Join room request ${JSON.stringify(data)}`);
-    const { roomId } = data;
-    const room = rooms.get(roomId);
-    if (room) {
-      if (room.users.length === MAX_USERS_PER_ROOM) {
-        socket.emit(ERR_MSG, "Room is already Full");
-      } else {
-        room.users.push(data.userId);
-        socket.join(roomId);
-        const result: JoinRoomSuccessType = { roomId, joined: true };
-        socket.emit(JOIN_ROOM_SUCCESS, result);
-      }
+    let room = rooms.get(roomId);
+    let symbol: "X" | "O";
+    if (!room) {
+      symbol = "X";
+      room = {
+        roomId,
+        users: [{ userId: data.userId, symbol }],
+        currentUser: null,
+        winner: null,
+        board: Array(9).fill(null)
+      };
+      rooms.set(roomId, room);
     } else {
-      socket.emit(ERR_MSG, "Room Does Not Exist");
+      if (room.users.length >= MAX_USERS_PER_ROOM) {
+        socket.emit(ERR_MSG, "Room is full");
+        return;
+      }
+      symbol = "O";
+      room.users.push({ userId: data.userId, symbol });
+    }
+    socket.join(roomId);
+    const result: JoinRoomSuccessType = {
+      roomId,
+      joined: true,
+      symbol
+    };
+    socket.emit(JOIN_ROOM_SUCCESS, result);
+    if (room.users.length === MAX_USERS_PER_ROOM) {
+      startGame(room, io);
     }
   });
+
+  socket.on(MAKE_MOVE, handleMakeMove);
 });
 
 export default httpServer;

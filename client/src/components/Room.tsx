@@ -1,17 +1,18 @@
 import { Alert, Typography } from "@mui/material";
 import {
   ALPHA_NUMERIC,
-  CREATE_ROOM,
-  CREATE_ROOM_SUCCESS,
   ERR_MSG,
+  JOIN,
   JoinRoomSuccessType,
-  JOIN_ROOM,
-  JOIN_ROOM_SUCCESS
+  JOIN_ROOM_SUCCESS,
+  RoomType,
+  START_GAME
 } from "@tic-tac-toe/utils";
 import { customAlphabet } from "nanoid/async";
 import { useEffect, useState } from "react";
 import { useSocket } from "../context/SocketProvider";
 import { useUser } from "../context/UserProvider";
+import { handlingStartGame } from "../helpers";
 import { ActionType } from "../reducers/userReducer";
 import GridItemButton from "./GridItemButton";
 import GridTextField from "./GridTextField";
@@ -31,7 +32,7 @@ const Room = () => {
       roomId: newRoomId,
       userId
     };
-    socket?.emit(CREATE_ROOM, obj);
+    socket?.emit(JOIN, obj);
   };
 
   const joinRoom = () => {
@@ -40,27 +41,35 @@ const Room = () => {
       roomId,
       userId
     };
-    socket?.emit(JOIN_ROOM, obj);
-  };
-
-  const dispatchJoinRoomSuccess = (result: JoinRoomSuccessType): void => {
-    dispatch({
-      type: ActionType.UpdateRoom,
-      payload: { roomId: result.roomId, joined: true }
-    });
-  };
-
-  const updateErrMsg = (msg: string): void => {
-    setErrMsg(msg);
+    socket?.emit(JOIN, obj);
   };
 
   useEffect(() => {
-    socket?.on(CREATE_ROOM_SUCCESS, dispatchJoinRoomSuccess);
+    const dispatchJoinRoomSuccess = (result: JoinRoomSuccessType): void => {
+      dispatch({
+        type: ActionType.UpdateRoom,
+        payload: {
+          roomId: result.roomId,
+          joined: true,
+          symbol: result.symbol
+        }
+      });
+    };
+
+    const updateErrMsg = (msg: string): void => {
+      setErrMsg(msg);
+    };
+
+    socket?.on(START_GAME, (room: RoomType) =>
+      handlingStartGame(room, userId, dispatch)
+    );
     socket?.on(JOIN_ROOM_SUCCESS, dispatchJoinRoomSuccess);
     socket?.on(ERR_MSG, updateErrMsg);
 
     return () => {
-      socket?.off(CREATE_ROOM_SUCCESS, dispatchJoinRoomSuccess);
+      socket?.off(START_GAME, (room: RoomType) =>
+        handlingStartGame(room, userId, dispatch)
+      );
       socket?.off(JOIN_ROOM_SUCCESS, dispatchJoinRoomSuccess);
       socket?.off(ERR_MSG, updateErrMsg);
     };
