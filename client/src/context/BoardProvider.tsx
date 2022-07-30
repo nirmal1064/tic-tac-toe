@@ -10,14 +10,14 @@ type BoardProviderType = {
   children: React.ReactNode;
 };
 
-const defaultValue = Array<string | null>(9).fill(null);
+const defaultValue = Array<"X" | "O" | null>(9).fill(null);
 
-type SetBoardType = Dispatch<SetStateAction<Array<string | null>>>;
+type SetBoardType = Dispatch<SetStateAction<Array<"X" | "O" | null>>>;
 
 const defaultUpdate: SetBoardType = () => defaultValue;
 
 type BoardContextType = {
-  board: Array<string | null>;
+  board: Array<"X" | "O" | null>;
   setBoard: SetBoardType;
 };
 

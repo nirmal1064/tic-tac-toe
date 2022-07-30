@@ -30,21 +30,20 @@ io.on("connection", (socket) => {
   });
 
   socket.on(CREATE_ROOM, (data: JoinRoomType) => {
-    console.log(`Create room request ${data}`);
+    console.log(`Create room request ${JSON.stringify(data)}`);
     const { roomId } = data;
     const roomInfo: RoomType = {
       roomId,
       users: [data.userId]
     };
     rooms.set(roomId, roomInfo);
-    console.log(rooms);
     socket.join(roomId);
     const result: JoinRoomSuccessType = { roomId, joined: true };
     socket.emit(CREATE_ROOM_SUCCESS, result);
   });
 
   socket.on(JOIN_ROOM, (data: JoinRoomType) => {
-    console.log(`Join room request ${data}`);
+    console.log(`Join room request ${JSON.stringify(data)}`);
     const { roomId } = data;
     const room = rooms.get(roomId);
     if (room) {

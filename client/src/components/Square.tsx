@@ -1,20 +1,22 @@
 import { FC, useEffect } from "react";
 import { useBoard } from "../context/BoardProvider";
 import { useSocket } from "../context/SocketProvider";
+import { useUser } from "../context/UserProvider";
 
 type SquareTypes = {
-  value: string | null;
+  value: "X" | "O" | null;
   idx: number;
 };
 
 const Square: FC<SquareTypes> = ({ value, idx }: SquareTypes) => {
   const socket = useSocket();
   const { board, setBoard } = useBoard();
+  const { state } = useUser();
 
   const handleSquareClick = () => {
     const newBoard = board.map((boardValue, index) => {
       if (idx === index && boardValue === null) {
-        return "X";
+        return state.symbol;
       }
       return boardValue;
     });
@@ -22,12 +24,11 @@ const Square: FC<SquareTypes> = ({ value, idx }: SquareTypes) => {
   };
 
   useEffect(() => {
-    if (socket == null) return;
-    socket.on("GET_RESPONSE", (msg) => {
+    socket?.on("GET_RESPONSE", (msg) => {
       console.log(msg);
     });
     return () => {
-      socket.off("GET_RESPONSE");
+      socket?.off("GET_RESPONSE");
     };
   }, [socket]);
 

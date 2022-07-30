@@ -13,7 +13,12 @@
 .grid-item {
   border: none;
   /* padding: 10px; */
-  background-color: red;
+  /* background-color: red; */
+  /*dark olive green*/
+  background-color: #808000;
+  /* lavender */
+  /* background-color: #e6e6fa; */
+  /* background-color: #008080;  */
   width: 5rem;
   height: 5rem;
   /* line-height: 5rem; */

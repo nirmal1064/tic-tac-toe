@@ -3,12 +3,11 @@ import { useUser } from "../context/UserProvider";
 import Square from "./Square";
 
 type BoardTypes = {
-  numbers: Array<string | null>;
+  numbers: Array<"X" | "O" | null>;
 };
 
 const Board = ({ numbers }: BoardTypes) => {
   const { state } = useUser();
-  console.log(state);
   return (
     <>
       <Typography marginBottom={"10px"}>Room ID {state.roomId}</Typography>
