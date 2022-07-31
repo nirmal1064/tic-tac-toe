@@ -6,7 +6,9 @@ export enum ActionType {
   GameStartMyTurn,
   GameStart,
   UpdateTurn,
-  UpdateSymbol
+  UpdateSymbol,
+  NewGame,
+  EndGame
 }
 
 type UpdateUser = {
@@ -37,13 +39,24 @@ type UpdateTurn = {
   payload: { turn: boolean };
 };
 
+type NewGame = {
+  type: ActionType.NewGame;
+  payload: { symbol: "X" | "O"; turn: boolean };
+};
+
+type EndGame = {
+  type: ActionType.EndGame;
+};
+
 export type UserActionTypes =
   | UpdateUser
   | UpdateRoom
   | UpdateSymbol
   | GameStart
   | GameStartMyTurn
-  | UpdateTurn;
+  | UpdateTurn
+  | NewGame
+  | EndGame;
 
 const userReducer = (state: UserType, action: UserActionTypes): UserType => {
   switch (action.type) {
@@ -80,6 +93,23 @@ const userReducer = (state: UserType, action: UserActionTypes): UserType => {
       return {
         ...state,
         turn: action.payload.turn
+      };
+    case ActionType.NewGame:
+      return {
+        ...state,
+        joined: true,
+        started: true,
+        symbol: action.payload.symbol,
+        turn: action.payload.turn
+      };
+    case ActionType.EndGame:
+      return {
+        ...state,
+        joined: false,
+        started: false,
+        symbol: null,
+        turn: false,
+        roomId: ""
       };
     default:
       return state;

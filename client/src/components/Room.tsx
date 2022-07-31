@@ -4,12 +4,13 @@ import {
   ERR_MSG,
   JOIN,
   JoinRoomSuccessType,
-  JOIN_ROOM_SUCCESS,
+  JOIN_SUCCESS,
   RoomType,
   START_GAME
 } from "@tic-tac-toe/utils";
 import { customAlphabet } from "nanoid/async";
 import { useEffect, useState } from "react";
+import { useBoard } from "../context/BoardProvider";
 import { useSocket } from "../context/SocketProvider";
 import { useUser } from "../context/UserProvider";
 import { handlingStartGame } from "../helpers";
@@ -21,6 +22,7 @@ const Room = () => {
   const { state, dispatch } = useUser();
   const { userId, userName } = state;
   const socket = useSocket();
+  const { setBgColor } = useBoard();
   const [roomId, setRoomId] = useState<string>("");
   const [errMsg, setErrMsg] = useState<string>("");
 
@@ -44,33 +46,34 @@ const Room = () => {
     socket?.emit(JOIN, obj);
   };
 
+  const dispatchJoinRoomSuccess = (result: JoinRoomSuccessType): void => {
+    setBgColor(result.bgColor);
+    dispatch({
+      type: ActionType.UpdateRoom,
+      payload: {
+        roomId: result.roomId,
+        joined: true,
+        symbol: result.symbol
+      }
+    });
+  };
+
+  const updateErrMsg = (msg: string): void => {
+    setErrMsg(msg);
+  };
+
   useEffect(() => {
-    const dispatchJoinRoomSuccess = (result: JoinRoomSuccessType): void => {
-      dispatch({
-        type: ActionType.UpdateRoom,
-        payload: {
-          roomId: result.roomId,
-          joined: true,
-          symbol: result.symbol
-        }
-      });
-    };
-
-    const updateErrMsg = (msg: string): void => {
-      setErrMsg(msg);
-    };
-
     socket?.on(START_GAME, (room: RoomType) =>
       handlingStartGame(room, userId, dispatch)
     );
-    socket?.on(JOIN_ROOM_SUCCESS, dispatchJoinRoomSuccess);
+    socket?.on(JOIN_SUCCESS, dispatchJoinRoomSuccess);
     socket?.on(ERR_MSG, updateErrMsg);
 
     return () => {
       socket?.off(START_GAME, (room: RoomType) =>
         handlingStartGame(room, userId, dispatch)
       );
-      socket?.off(JOIN_ROOM_SUCCESS, dispatchJoinRoomSuccess);
+      socket?.off(JOIN_SUCCESS, dispatchJoinRoomSuccess);
       socket?.off(ERR_MSG, updateErrMsg);
     };
   }, [socket]);
