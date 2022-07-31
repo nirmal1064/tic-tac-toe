@@ -14,9 +14,9 @@
     "server": "yarn workspace @tic-tac-toe/server",
     "utils": "yarn workspace @tic-tac-toe/utils",
     "dev": "concurrently \"yarn server dev\" \"yarn client dev\"",
-    "install": "cd server && npm install --dev",
-    "build": "cd server && npm run build",
-    "start": "cd server && npm start"
+    "install": "cd server && yarn install",
+    "build": "cd server && yarn build",
+    "start": "cd server && yarn start"
   },
   "devDependencies": {
     "concurrently": "^7.3.0"
